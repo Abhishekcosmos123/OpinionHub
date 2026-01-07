@@ -66,9 +66,11 @@ CategorySchema.pre('validate', function (next) {
 // Register model - mongoose.model() is safe to call multiple times
 // It will return the existing model if already registered
 // This pattern ensures the model is always registered, critical for serverless
-const Category: Model<ICategory> = mongoose.models.Category 
-  ? (mongoose.models.Category as Model<ICategory>)
-  : mongoose.model<ICategory>('Category', CategorySchema);
+// Check if mongoose.models exists (it might not in some serverless environments)
+const Category: Model<ICategory> = 
+  (mongoose.models && mongoose.models.Category) 
+    ? (mongoose.models.Category as Model<ICategory>)
+    : mongoose.model<ICategory>('Category', CategorySchema);
 
 export default Category;
 

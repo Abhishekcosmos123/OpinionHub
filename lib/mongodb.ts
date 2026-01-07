@@ -6,6 +6,15 @@ if (!process.env.MONGODB_URI) {
 
 const MONGODB_URI: string = process.env.MONGODB_URI;
 
+// Import models to ensure they're registered before connection
+// This is critical for serverless environments like Vercel
+// Import in dependency order: Admin -> Category -> Poll -> Vote -> OTP
+import '@/models/Admin';
+import '@/models/Category';
+import '@/models/Poll';
+import '@/models/Vote';
+import '@/models/OTP';
+
 interface MongooseCache {
   conn: typeof mongoose | null;
   promise: Promise<typeof mongoose> | null;
