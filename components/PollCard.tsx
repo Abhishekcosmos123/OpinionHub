@@ -7,12 +7,14 @@ import CustomCaptcha from './CustomCaptcha';
 import { Poll, VoteResponse } from '@/types';
 import SuccessModal from './SuccessModal';
 import { getDeviceId } from '@/lib/deviceId';
+import { getDeviceFingerprint } from '@/lib/deviceFingerprint';
 
 interface PollCardProps {
   poll: Poll;
 }
 
-function PollCard({ poll }: PollCardProps) {
+function PollCard({ poll: initialPoll }: PollCardProps) {
+  const [poll, setPoll] = useState<Poll>(initialPoll);
   const [voted, setVoted] = useState(false);
   const [showCaptcha, setShowCaptcha] = useState(false);
   const [selectedVote, setSelectedVote] = useState<'yes' | 'no' | null>(null);
@@ -21,18 +23,26 @@ function PollCard({ poll }: PollCardProps) {
   const [success, setSuccess] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [deviceId, setDeviceId] = useState<string>('');
+  const [deviceFingerprint, setDeviceFingerprint] = useState<string>('');
+
+  // Update poll when prop changes
+  useEffect(() => {
+    setPoll(initialPoll);
+  }, [initialPoll]);
 
   useEffect(() => {
-    // Get device ID on component mount
+    // Get device ID and fingerprint on component mount
     const id = getDeviceId();
+    const fingerprint = getDeviceFingerprint();
     setDeviceId(id);
+    setDeviceFingerprint(fingerprint);
     
     // Check if user has already voted
-    checkVoteStatus(id);
+    checkVoteStatus(id, fingerprint);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [poll._id]);
 
-  const checkVoteStatus = async (deviceId: string) => {
+  const checkVoteStatus = async (deviceId: string, fingerprint: string) => {
     try {
       const res = await fetch('/api/polls/check-vote', {
         method: 'POST',
@@ -40,6 +50,7 @@ function PollCard({ poll }: PollCardProps) {
         body: JSON.stringify({
           pollId: poll._id,
           deviceId,
+          deviceFingerprint: fingerprint,
         }),
       });
 
@@ -111,12 +122,13 @@ function PollCard({ poll }: PollCardProps) {
       const res = await fetch('/api/polls/vote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          pollId: poll._id,
-          vote,
-          captchaToken: token,
-          deviceId: deviceId || getDeviceId(),
-        }),
+          body: JSON.stringify({
+            pollId: poll._id,
+            vote,
+            captchaToken: token,
+            deviceId: deviceId || getDeviceId(),
+            deviceFingerprint: deviceFingerprint || getDeviceFingerprint(),
+          }),
       });
 
       const data: VoteResponse = await res.json();
@@ -126,10 +138,10 @@ function PollCard({ poll }: PollCardProps) {
         setSuccess(true);
         setShowCaptcha(false);
         setCaptchaToken(null);
-        // Refresh page to show updated vote counts
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+        // Update poll data with new vote counts
+        if (data.poll) {
+          setPoll(data.poll as Poll);
+        }
       } else {
         setError(data.error || 'Failed to submit vote');
         setShowCaptcha(false);

@@ -10,6 +10,7 @@ export interface IPoll extends Document {
   yesVotes: number;
   noVotes: number;
   isTrending: boolean;
+  isTopPoll: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -63,6 +64,10 @@ const PollSchema: Schema = new Schema(
       min: 0,
     },
     isTrending: {
+      type: Boolean,
+      default: false,
+    },
+    isTopPoll: {
       type: Boolean,
       default: false,
     },

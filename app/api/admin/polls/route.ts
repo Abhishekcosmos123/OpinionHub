@@ -20,6 +20,7 @@ const pollSchema = z.object({
   noButtonText: z.string().min(1, 'No button text is required').max(50, 'No button text cannot exceed 50 characters'),
   category: z.string().min(1, 'Category is required'),
   isTrending: z.boolean().optional().default(false),
+  isTopPoll: z.boolean().optional().default(false),
 });
 
 async function requireAuth(request: NextRequest) {

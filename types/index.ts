@@ -18,6 +18,7 @@ export interface Poll {
   yesVotes: number;
   noVotes: number;
   isTrending?: boolean;
+  isTopPoll?: boolean;
   yesPercentage?: number;
   noPercentage?: number;
   totalVotes?: number;
@@ -29,5 +30,6 @@ export interface VoteResponse {
   success: boolean;
   message?: string;
   error?: string;
+  poll?: Poll;
 }
 

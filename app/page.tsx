@@ -4,9 +4,12 @@ import { useEffect, useState, Suspense, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import PollCard from '@/components/PollCard';
+import TrendingHeroCard from '@/components/TrendingHeroCard';
 import CategorySidebar from '@/components/CategorySidebar';
 import Pagination from '@/components/Pagination';
 import { Poll, Category } from '@/types';
+import { getDeviceId } from '@/lib/deviceId';
+import { getDeviceFingerprint } from '@/lib/deviceFingerprint';
 
 function HomeContent() {
   const searchParams = useSearchParams();
@@ -21,26 +24,80 @@ function HomeContent() {
   const trendingScrollRef = useRef<HTMLDivElement>(null);
   const [isHovered, setIsHovered] = useState(false);
   const autoScrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Hero image rotation - Using actual images
-  const heroImages = [
-    { 
-      image: '/hero-banner.jpg', 
-      gradient: 'from-blue-900/85 via-indigo-800/80 via-purple-800/75 to-pink-700/70',
-      title: 'Take your knowledge to another level'
-    },
-    
-  ];
-  const [currentHeroImage, setCurrentHeroImage] = useState(0);
-  const [isHeroHovered, setIsHeroHovered] = useState(false);
-  const heroIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [filteredTrendingPolls, setFilteredTrendingPolls] = useState<Poll[]>([]);
+  const [deviceId, setDeviceId] = useState<string>('');
+  const [deviceFingerprint, setDeviceFingerprint] = useState<string>('');
+  const [topPolls, setTopPolls] = useState<Poll[]>([]);
+  const [refreshTrending, setRefreshTrending] = useState(0); // Trigger to refresh trending polls
   
   // Get search query from URL
   const searchQuery = searchParams.get('search') || '';
 
   useEffect(() => {
     fetchCategories();
+    fetchTopPolls();
+    // Get device ID and fingerprint on mount
+    const id = getDeviceId();
+    const fingerprint = getDeviceFingerprint();
+    setDeviceId(id);
+    setDeviceFingerprint(fingerprint);
   }, []);
+
+  const fetchTopPolls = async () => {
+    try {
+      const res = await fetch('/api/polls/top?limit=10');
+      const data = await res.json();
+      if (data.success) {
+        setTopPolls(data.polls || []);
+      } else {
+        setTopPolls([]);
+      }
+    } catch (err) {
+      // Silently fail - top polls are optional
+      setTopPolls([]);
+    }
+  };
+
+  // Filter out voted polls from trending and limit to 4
+  useEffect(() => {
+    const filterTrendingPolls = async () => {
+      if (trendingPolls.length === 0 || !deviceId) {
+        setFilteredTrendingPolls([]);
+        return;
+      }
+
+      // Check more polls to ensure we have enough non-voted polls to display
+      const checkVotes = await Promise.all(
+        trendingPolls.slice(0, 20).map(async (poll) => {
+          try {
+            const res = await fetch('/api/polls/check-vote', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                pollId: poll._id,
+                deviceId,
+                deviceFingerprint: deviceFingerprint,
+              }),
+            });
+            const data = await res.json();
+            return { poll, hasVoted: data.success && data.hasVoted };
+          } catch {
+            return { poll, hasVoted: false };
+          }
+        })
+      );
+
+      const nonVotedPolls = checkVotes
+        .filter(({ hasVoted }) => !hasVoted)
+        .map(({ poll }) => poll)
+        .slice(0, 4); // Limit to 4 polls
+
+      setFilteredTrendingPolls(nonVotedPolls);
+    };
+
+    filterTrendingPolls();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trendingPolls.length, deviceId, deviceFingerprint, refreshTrending]);
 
   const fetchPolls = useCallback(async () => {
     try {
@@ -86,14 +143,14 @@ function HomeContent() {
         trendingParams.append('category', selectedCategory);
       }
 
-      // Fetch all polls (non-trending)
-      const allParams = new URLSearchParams({
-        page: currentPage.toString(),
-        limit: '12',
-        sortBy: 'createdAt',
-        sortOrder: 'desc',
-        trending: 'false', // Only non-trending polls
-      });
+          // Fetch all polls (non-trending)
+          const allParams = new URLSearchParams({
+            page: currentPage.toString(),
+            limit: '8',
+            sortBy: 'createdAt',
+            sortOrder: 'desc',
+            trending: 'false', // Only non-trending polls
+          });
       if (selectedCategory) {
         allParams.append('category', selectedCategory);
       }
@@ -122,28 +179,6 @@ function HomeContent() {
     }
   }, [searchQuery, selectedCategory, currentPage]);
 
-  // Hero image rotation effect
-  useEffect(() => {
-    if (searchQuery || isHeroHovered) {
-      if (heroIntervalRef.current) {
-        clearInterval(heroIntervalRef.current);
-        heroIntervalRef.current = null;
-      }
-      return;
-    }
-
-    heroIntervalRef.current = setInterval(() => {
-      setCurrentHeroImage((prev) => (prev + 1) % heroImages.length);
-    }, 4000); // Change image every 4 seconds
-
-    return () => {
-      if (heroIntervalRef.current) {
-        clearInterval(heroIntervalRef.current);
-        heroIntervalRef.current = null;
-      }
-    };
-  }, [searchQuery, isHeroHovered, heroImages.length]);
-
   // Reset to page 1 when search query or category changes
   useEffect(() => {
     setCurrentPage(1);
@@ -155,7 +190,7 @@ function HomeContent() {
 
   // Auto-scroll trending products
   useEffect(() => {
-    if (!trendingScrollRef.current || trendingPolls.length === 0 || isHovered || searchQuery) {
+    if (!trendingScrollRef.current || filteredTrendingPolls.length === 0 || isHovered || searchQuery) {
       if (autoScrollIntervalRef.current) {
         clearInterval(autoScrollIntervalRef.current);
         autoScrollIntervalRef.current = null;
@@ -216,9 +251,9 @@ function HomeContent() {
       if (autoScrollIntervalRef.current) {
         clearInterval(autoScrollIntervalRef.current);
         autoScrollIntervalRef.current = null;
-      }
-    };
-  }, [trendingPolls.length, isHovered, searchQuery]);
+          }
+        };
+      }, [filteredTrendingPolls.length, isHovered, searchQuery]);
 
   const fetchCategories = async () => {
     try {
@@ -239,74 +274,7 @@ function HomeContent() {
 
       return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 via-purple-50 to-pink-50 pt-16">
-      {/* Hero Section with Rotating Images - Only show when not searching */}
-      {!searchQuery && (
-        <div 
-          className="relative w-full h-64 md:h-80 lg:h-96 mb-6 md:mb-8 overflow-hidden rounded-3xl mx-4 md:mx-6 shadow-2xl"
-          onMouseEnter={() => setIsHeroHovered(true)}
-          onMouseLeave={() => setIsHeroHovered(false)}
-        >
-          {/* Rotating Images */}
-          <div className="relative w-full h-full">
-            {heroImages.map((hero, index) => (
-              <div
-                key={index}
-                className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-                  index === currentHeroImage ? 'opacity-100 z-10' : 'opacity-0 z-0'
-                }`}
-              >
-                <div
-                  className="w-full h-full bg-cover bg-center relative"
-                  style={{
-                    backgroundImage: `url('${hero.image}')`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                  }}
-                >
-                  {/* Gradient overlay */}
-                  <div className={`absolute inset-0 bg-gradient-to-r ${hero.gradient} backdrop-blur-sm`}></div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Content Overlay */}
-          <div className="absolute inset-0 flex items-center z-20">
-            <div className="container mx-auto px-4 text-white">
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-2 animate-fade-in">
-                Take your
-              </h1>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-2 animate-fade-in">
-                knowledge to
-              </h1>
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 animate-fade-in">
-                another level
-              </h1>
-              <p className="text-base sm:text-lg md:text-xl lg:text-2xl max-w-2xl opacity-90 animate-fade-in-delay">
-                Share your opinion on trending products and discover what others think
-              </p>
-            </div>
-          </div>
-
-          {/* Navigation Dots */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 flex gap-2">
-            {heroImages.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentHeroImage(index)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  index === currentHeroImage
-                    ? 'w-8 bg-white'
-                    : 'w-2 bg-white/50 hover:bg-white/75'
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-
-      <div className="container mx-auto px-4 sm:px-6 py-4 md:py-6">
+      <div className="container mx-auto px-4 sm:px-6 py-8 md:py-12">
         {searchQuery && (
           <div className="mb-6 flex items-center justify-between bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border-2 border-indigo-300 rounded-2xl p-4 shadow-lg">
             <div className="flex items-center gap-2">
@@ -328,6 +296,96 @@ function HomeContent() {
               </svg>
               Clear
             </button>
+          </div>
+        )}
+
+        {/* Trending Products Hero Section - No Heading */}
+        {!searchQuery && filteredTrendingPolls.length > 0 && (
+          <div className="mb-12 -mx-4 sm:-mx-6">
+            <div
+              ref={trendingScrollRef}
+              onMouseEnter={() => setIsHovered(true)}
+              onMouseLeave={() => setIsHovered(false)}
+              className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-6 snap-x snap-mandatory px-4 sm:px-6"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
+              {filteredTrendingPolls.map((poll, index) => {
+                const totalVotes = poll.totalVotes || poll.yesVotes + poll.noVotes;
+                const yesPercentage = poll.yesPercentage !== undefined 
+                  ? poll.yesPercentage 
+                  : totalVotes > 0 
+                    ? ((poll.yesVotes / totalVotes) * 100).toFixed(1) 
+                    : '0';
+                const noPercentage = poll.noPercentage !== undefined
+                  ? poll.noPercentage
+                  : totalVotes > 0
+                    ? ((poll.noVotes / totalVotes) * 100).toFixed(1)
+                    : '0';
+
+                return (
+                  <div
+                    key={`trending-${poll._id}`}
+                    className="flex-shrink-0 snap-start w-full min-w-[85vw] sm:min-w-[80vw] md:min-w-[75vw] lg:min-w-[65vw] xl:min-w-[55vw]"
+                    style={{
+                      animationDelay: `${index * 100}ms`,
+                    }}
+                  >
+                    <TrendingHeroCard 
+                      poll={poll} 
+                      totalVotes={totalVotes} 
+                      yesPercentage={yesPercentage} 
+                      noPercentage={noPercentage}
+                      onVoteSuccess={() => setRefreshTrending(prev => prev + 1)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <style jsx global>{`
+              .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
+          </div>
+        )}
+
+        {/* Top Polls Section - Above Category and All Products */}
+        {!searchQuery && topPolls.length > 0 && (
+          <div className="mb-12 -mx-4 sm:-mx-6">
+            <div className="flex items-center gap-5 mb-8 px-4 sm:px-6">
+              <div className="w-16 h-16 bg-gradient-to-br from-yellow-500 via-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-2xl transform rotate-3 hover:rotate-6 transition-transform duration-300 border-2 border-white/50">
+                <svg className="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-yellow-600 via-orange-600 to-red-600 bg-clip-text text-transparent drop-shadow-sm">
+                  Top Polls
+                </h2>
+                <p className="text-base text-gray-600 mt-2 font-semibold">
+                  Featured polls selected by our team
+                </p>
+              </div>
+            </div>
+            <div
+              className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-6 snap-x snap-mandatory px-4 sm:px-6"
+              style={{
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none',
+              }}
+            >
+              {topPolls.map((poll) => (
+                <div
+                  key={`top-${poll._id}`}
+                  className="flex-shrink-0 snap-start w-[280px] sm:w-[300px] md:w-[320px] lg:min-w-[240px]"
+                >
+                  <PollCard poll={poll} />
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
@@ -421,64 +479,19 @@ function HomeContent() {
               </div>
             ) : (
               <>
-                {/* Trending Products Section */}
-                {!searchQuery && trendingPolls.length > 0 && (
-                  <div className="mb-12">
-                    <div className="flex items-center justify-between mb-8">
-                      <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg transform rotate-3">
-                          <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 via-red-600 to-pink-600 bg-clip-text text-transparent">
-                            Trending Products
-                          </h2>
-                          <p className="text-xs sm:text-sm text-gray-500 mt-1">Most popular products right now</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div
-                      ref={trendingScrollRef}
-                      onMouseEnter={() => setIsHovered(true)}
-                      onMouseLeave={() => setIsHovered(false)}
-                      className="flex gap-4 md:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4 snap-x snap-mandatory"
-                      style={{
-                        scrollbarWidth: 'none',
-                        msOverflowStyle: 'none',
-                      }}
-                    >
-                      {trendingPolls.map((poll) => (
-                        <div
-                          key={`trending-${poll._id}`}
-                          className="flex-shrink-0 snap-start w-[85vw] sm:w-[45vw] md:w-[30vw] lg:w-[calc(25%-18px)] min-w-[280px]"
-                        >
-                          <PollCard poll={poll} />
-                        </div>
-                      ))}
-                    </div>
-                    <style jsx global>{`
-                      .scrollbar-hide::-webkit-scrollbar {
-                        display: none;
-                      }
-                    `}</style>
-                  </div>
-                )}
-
                 {/* All Products Section */}
-                <div className="mb-8">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-14 h-14 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl transform -rotate-3 hover:-rotate-6 transition-transform duration-300">
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="mb-12">
+                  <div className="flex items-center gap-5 mb-8">
+                    <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-2xl transform -rotate-3 hover:-rotate-6 transition-transform duration-300 border-2 border-white/50">
+                      <svg className="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                       </svg>
                     </div>
                     <div>
-                      <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-sm">
+                      <h2 className="text-4xl sm:text-5xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-sm">
                         {searchQuery ? 'Search Results' : 'All Products'}
                       </h2>
-                      <p className="text-sm text-gray-600 mt-1 font-medium">
+                      <p className="text-base text-gray-600 mt-2 font-semibold">
                         {searchQuery ? `Found ${allPolls.length} result${allPolls.length !== 1 ? 's' : ''}` : 'Explore all available products'}
                       </p>
                     </div>
@@ -496,9 +509,11 @@ function HomeContent() {
                     </div>
                   ) : (
                     <>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 auto-rows-fr">
                         {allPolls.map((poll) => (
-                          <PollCard key={`poll-${poll._id}`} poll={poll} />
+                          <div key={`poll-${poll._id}`} className="h-full">
+                            <PollCard poll={poll} />
+                          </div>
                         ))}
                       </div>
                       <Pagination

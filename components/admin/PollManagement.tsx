@@ -28,6 +28,7 @@ export default function PollManagement() {
     noButtonText: 'No',
     category: '',
     isTrending: false,
+    isTopPoll: false,
   });
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
@@ -98,6 +99,7 @@ export default function PollManagement() {
       noButtonText: 'No',
       category: categories.length > 0 ? categories[0]._id : '',
       isTrending: false,
+      isTopPoll: false,
     });
     setImageFile(null);
     setImagePreview('');
@@ -154,15 +156,16 @@ export default function PollManagement() {
 
   const handleEdit = (poll: Poll) => {
     setEditingPoll(poll);
-    setFormData({
-      productName: poll.productName,
-      statement: poll.statement,
-      productImage: poll.productImage,
-      yesButtonText: poll.yesButtonText,
-      noButtonText: poll.noButtonText,
-      category: typeof poll.category === 'object' ? poll.category._id : poll.category,
-      isTrending: (poll as any).isTrending || false,
-    });
+      setFormData({
+        productName: poll.productName,
+        statement: poll.statement,
+        productImage: poll.productImage,
+        yesButtonText: poll.yesButtonText,
+        noButtonText: poll.noButtonText,
+        category: typeof poll.category === 'object' ? poll.category._id : poll.category,
+        isTrending: (poll as any).isTrending || false,
+        isTopPoll: (poll as any).isTopPoll || false,
+      });
     setImagePreview(poll.productImage);
     setShowEditModal(true);
     setError('');
@@ -493,17 +496,31 @@ export default function PollManagement() {
               </select>
             </div>
 
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="isTrending"
-                checked={formData.isTrending}
-                onChange={(e) => setFormData({ ...formData, isTrending: e.target.checked })}
-                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-              />
-              <label htmlFor="isTrending" className="ml-2 text-sm font-medium text-gray-700">
-                Mark as Trending
-              </label>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isTrending"
+                  checked={formData.isTrending}
+                  onChange={(e) => setFormData({ ...formData, isTrending: e.target.checked })}
+                  className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <label htmlFor="isTrending" className="ml-2 text-sm font-medium text-gray-700">
+                  Mark as Trending
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isTopPoll"
+                  checked={formData.isTopPoll}
+                  onChange={(e) => setFormData({ ...formData, isTopPoll: e.target.checked })}
+                  className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                />
+                <label htmlFor="isTopPoll" className="ml-2 text-sm font-medium text-gray-700">
+                  Mark as Top Poll
+                </label>
+              </div>
             </div>
           </form>
       </Modal>
@@ -645,17 +662,31 @@ export default function PollManagement() {
             </select>
           </div>
 
-          <div className="flex items-center">
-            <input
-              type="checkbox"
-              id="isTrendingEdit"
-              checked={formData.isTrending}
-              onChange={(e) => setFormData({ ...formData, isTrending: e.target.checked })}
-              className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-            />
-            <label htmlFor="isTrendingEdit" className="ml-2 text-sm font-medium text-gray-700">
-              Mark as Trending
-            </label>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="isTrendingEdit"
+                checked={formData.isTrending}
+                onChange={(e) => setFormData({ ...formData, isTrending: e.target.checked })}
+                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+              />
+              <label htmlFor="isTrendingEdit" className="ml-2 text-sm font-medium text-gray-700">
+                Mark as Trending
+              </label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="isTopPollEdit"
+                checked={formData.isTopPoll}
+                onChange={(e) => setFormData({ ...formData, isTopPoll: e.target.checked })}
+                className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+              />
+              <label htmlFor="isTopPollEdit" className="ml-2 text-sm font-medium text-gray-700">
+                Mark as Top Poll
+              </label>
+            </div>
           </div>
 
         </form>
