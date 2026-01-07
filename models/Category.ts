@@ -63,8 +63,12 @@ CategorySchema.pre('validate', function (next) {
   next();
 });
 
-// Use existing model or create new one (serverless-friendly pattern)
-const Category: Model<ICategory> = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
+// Register model - mongoose.model() is safe to call multiple times
+// It will return the existing model if already registered
+// This pattern ensures the model is always registered, critical for serverless
+const Category: Model<ICategory> = mongoose.models.Category 
+  ? (mongoose.models.Category as Model<ICategory>)
+  : mongoose.model<ICategory>('Category', CategorySchema);
 
 export default Category;
 

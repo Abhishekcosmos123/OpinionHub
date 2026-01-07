@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
+// Import models in dependency order: Category -> Poll -> Vote
+import Category from '@/models/Category';
 import Poll from '@/models/Poll';
 import Vote from '@/models/Vote';
 import { z } from 'zod';

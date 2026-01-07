@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
+// Import Category before Poll (Poll references Category, needed for populate)
+import Category from '@/models/Category';
 import Poll from '@/models/Poll';
 
 export async function GET(

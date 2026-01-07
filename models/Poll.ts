@@ -72,8 +72,13 @@ const PollSchema: Schema = new Schema(
   }
 );
 
-// Use existing model or create new one (serverless-friendly pattern)
-const Poll: Model<IPoll> = mongoose.models.Poll || mongoose.model<IPoll>('Poll', PollSchema);
+// Register model - mongoose.model() is safe to call multiple times
+// It will return the existing model if already registered
+// This pattern ensures the model is always registered, critical for serverless
+// Note: Category must be registered before Poll (due to ref relationship)
+const Poll: Model<IPoll> = mongoose.models.Poll
+  ? (mongoose.models.Poll as Model<IPoll>)
+  : mongoose.model<IPoll>('Poll', PollSchema);
 
 export default Poll;
 

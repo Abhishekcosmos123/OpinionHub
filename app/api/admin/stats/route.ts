@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
-import Poll from '@/models/Poll';
+// Import Category before Poll (Poll references Category)
 import Category from '@/models/Category';
+import Poll from '@/models/Poll';
 import Vote from '@/models/Vote';
 import { getAdminFromRequest } from '@/lib/auth';
 

@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import mongoose from 'mongoose';
 import connectDB from '@/lib/mongodb';
+// Import Category before Poll (Poll references Category)
+import Category from '@/models/Category';
 import Poll from '@/models/Poll';
 import Vote from '@/models/Vote';
-import Category from '@/models/Category';
 import { getAdminFromRequest } from '@/lib/auth';
 import { z } from 'zod';
 
