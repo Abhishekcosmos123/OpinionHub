@@ -115,14 +115,56 @@ function NavbarContent() {
           )}
 
           {/* Navigation Links */}
-          <div className="flex items-center space-x-6 flex-shrink-0">
+          <div className="flex items-center space-x-4 flex-shrink-0">
             {!isAdmin && (
-              <Link
-                href="/admin/login"
-                className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
-              >
-                Admin Login
-              </Link>
+              <>
+                {/* Navigation Buttons */}
+                <div className="hidden md:flex items-center space-x-2">
+                  <Link
+                    href="/"
+                    className="px-4 py-2 text-gray-700 hover:text-indigo-600 font-medium rounded-lg transition-all duration-300 hover:bg-indigo-50"
+                  >
+                    Home
+                  </Link>
+                  <button
+                    onClick={() => {
+                      // Scroll to categories section or trigger category filter
+                      const categorySection = document.querySelector('[data-category-section]');
+                      if (categorySection) {
+                        categorySection.scrollIntoView({ behavior: 'smooth' });
+                      }
+                    }}
+                    className="px-4 py-2 text-gray-700 hover:text-indigo-600 font-medium rounded-lg transition-all duration-300 hover:bg-indigo-50"
+                  >
+                    Categories
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Scroll to trending section
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    className="px-4 py-2 text-gray-700 hover:text-indigo-600 font-medium rounded-lg transition-all duration-300 hover:bg-indigo-50"
+                  >
+                    Trending
+                  </button>
+                  <button
+                    className="px-4 py-2 text-gray-700 hover:text-indigo-600 font-medium rounded-lg transition-all duration-300 hover:bg-indigo-50"
+                  >
+                    About
+                  </button>
+                </div>
+                
+                {/* CTA Buttons */}
+                <div className="flex items-center space-x-3">
+                  
+                  <Link
+                    href="/admin/login"
+                    className="px-5 py-2.5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-700 hover:via-purple-700 hover:to-pink-700 text-white rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  >
+                    Admin Login
+                  </Link>
+                </div>
+              </>
             )}
             {isAdmin && (
               <Link
