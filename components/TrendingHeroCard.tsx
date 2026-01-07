@@ -226,18 +226,16 @@ export default function TrendingHeroCard({ poll: initialPoll, totalVotes: initia
 
       <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200/50 flex flex-col md:flex-row h-full animate-fade-in hover:shadow-2xl transition-all duration-300 gap-0">
         {/* Product Image Section - Left */}
-        <div className="relative w-full md:w-2/5 h-64 md:h-auto min-h-[250px] md:min-h-[350px] bg-gradient-to-br from-gray-50 to-gray-100 overflow-hidden flex-shrink-0">
-          <div className="relative w-full h-full flex items-center justify-center p-2 md:p-3">
-            <div className="relative w-full h-full max-w-[350px] max-h-[350px]">
-              <Image
-                src={poll.productImage}
-                alt={poll.productName}
-                fill
-                className="object-contain drop-shadow-lg"
-                unoptimized
-                sizes="(max-width: 768px) 100vw, 40vw"
-              />
-            </div>
+        <div className="relative w-full md:w-2/5 h-64 md:h-auto min-h-[250px] md:min-h-[350px] bg-gradient-to-br from-gray-50 to-gray-100 flex-shrink-0">
+          <div className="relative w-full h-full flex items-center justify-center p-3 md:p-4">
+            <Image
+              src={poll.productImage}
+              alt={poll.productName}
+              fill
+              className="object-contain drop-shadow-lg"
+              unoptimized
+              sizes="(max-width: 768px) 100vw, 40vw"
+            />
           </div>
         </div>
 
