@@ -72,12 +72,8 @@ const PollSchema: Schema = new Schema(
   }
 );
 
-// Delete the model if it exists to avoid caching issues
-if (mongoose.models.Poll) {
-  delete mongoose.models.Poll;
-}
-
-const Poll: Model<IPoll> = mongoose.model<IPoll>('Poll', PollSchema);
+// Use existing model or create new one (serverless-friendly pattern)
+const Poll: Model<IPoll> = mongoose.models.Poll || mongoose.model<IPoll>('Poll', PollSchema);
 
 export default Poll;
 

@@ -63,12 +63,8 @@ CategorySchema.pre('validate', function (next) {
   next();
 });
 
-// Delete the model if it exists to avoid caching issues
-if (mongoose.models.Category) {
-  delete mongoose.models.Category;
-}
-
-const Category: Model<ICategory> = mongoose.model<ICategory>('Category', CategorySchema);
+// Use existing model or create new one (serverless-friendly pattern)
+const Category: Model<ICategory> = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);
 
 export default Category;
 
