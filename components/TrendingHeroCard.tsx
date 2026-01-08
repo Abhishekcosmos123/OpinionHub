@@ -224,10 +224,10 @@ export default function TrendingHeroCard({ poll: initialPoll, totalVotes: initia
 
       {typeof window !== 'undefined' && createPortal(captchaModal, document.body)}
 
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200/50 flex flex-col md:flex-row h-full animate-fade-in hover:shadow-2xl transition-all duration-300 gap-0">
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200/50 flex flex-col md:flex-row animate-fade-in hover:shadow-2xl transition-all duration-300 gap-0">
         {/* Product Image Section - Left */}
-        <div className="relative w-full md:w-2/5 h-64 md:h-auto min-h-[250px] md:min-h-[350px] bg-gradient-to-br from-gray-50 to-gray-100 flex-shrink-0">
-          <div className="relative w-full h-full flex items-center justify-center p-3 md:p-4">
+        <div className="relative w-full md:w-2/5 h-40 sm:h-48 md:h-auto min-h-[160px] sm:min-h-[200px] md:min-h-[350px] bg-gradient-to-br from-gray-50 to-gray-100 flex-shrink-0">
+          <div className="relative w-full h-full flex items-center justify-center p-2 sm:p-3 md:p-4">
             <Image
               src={poll.productImage}
               alt={poll.productName}
@@ -240,45 +240,41 @@ export default function TrendingHeroCard({ poll: initialPoll, totalVotes: initia
         </div>
 
         {/* Content Section - Right with Common Background */}
-        <div className="relative w-full md:w-3/5 h-full min-h-[350px] md:min-h-[350px] overflow-hidden flex-shrink-0">
-          {/* Common Background Image */}
-          <div className="absolute inset-0">
-            <div className="w-full h-full bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600"></div>
-            {/* Pattern overlay */}
-            <div className="absolute inset-0 opacity-20" style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            }}></div>
-            {/* Gradient Overlay for readability */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/50 to-black/40"></div>
-          </div>
+        <div className="relative w-full md:w-3/5 flex-1 min-h-[450px] sm:min-h-[480px] md:min-h-[350px] bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 flex-shrink-0">
+          {/* Pattern overlay */}
+          <div className="absolute inset-0 opacity-20" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          }}></div>
+          {/* Gradient Overlay for readability */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/50 to-black/40"></div>
 
           {/* Content Overlay */}
-          <div className="relative z-10 h-full flex flex-col justify-between p-4 md:p-6 lg:p-8 text-white">
-            <div>
+          <div className="relative z-10 h-full flex flex-col px-3 pt-3 pb-0 sm:px-4 sm:pt-4 sm:pb-0 md:px-6 md:pt-6 md:pb-0 lg:px-8 lg:pt-8 lg:pb-0 text-white">
+            <div className="flex-shrink-0 mb-3 sm:mb-4">
               {/* Product Name */}
-              <div className="mb-2">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-1 leading-tight drop-shadow-lg">
+              <div className="mb-1 sm:mb-2">
+                <h2 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold leading-tight drop-shadow-lg line-clamp-1">
                   {poll.productName}
                 </h2>
               </div>
 
               {/* Poll Question */}
-              <p className="text-base sm:text-lg md:text-xl mb-4 font-medium leading-relaxed drop-shadow-md">
+              <p className="text-xs sm:text-sm md:text-base lg:text-lg mb-2 sm:mb-3 font-medium leading-relaxed drop-shadow-md line-clamp-2">
                 {poll.statement}
               </p>
 
               {/* Category and Total Votes */}
-              <div className="flex flex-wrap items-center gap-3 mb-4">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
                 {typeof poll.category === 'object' && poll.category.name && (
-                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-lg border border-white/30">
-                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-white/20 backdrop-blur-md rounded-lg border border-white/30">
+                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
                     </svg>
                     <span className="text-xs sm:text-sm font-semibold text-white">Category: {poll.category.name}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/20 backdrop-blur-md rounded-lg border border-white/30">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-white/20 backdrop-blur-md rounded-lg border border-white/30">
+                  <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                   <span className="text-xs sm:text-sm font-semibold text-white">Total Votes: {totalVotes}</span>
@@ -292,24 +288,24 @@ export default function TrendingHeroCard({ poll: initialPoll, totalVotes: initia
               )}
             </div>
 
-            {/* Bottom Section - Results and Buttons */}
-            <div className="mt-auto">
+            {/* Bottom Section - Results and Buttons - Always visible */}
+            <div className="mt-auto flex-shrink-0 pt-2 sm:pt-3 pb-3 sm:pb-4 md:pb-6 lg:pb-8">
               {/* Vote Results */}
               {totalVotes > 0 && (
-                <div className="border-t border-white/30 pt-4 bg-white/10 backdrop-blur-sm rounded-lg p-3 mb-4">
-                  <div className="space-y-2.5 mb-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-green-300 font-semibold text-sm sm:text-base">{poll.yesButtonText}: {yesPercentage}%</span>
-                      <span className="text-white/80 text-xs sm:text-sm">({poll.yesVotes} votes)</span>
+                <div className="border-t border-white/30 pt-2 sm:pt-3 bg-white/10 backdrop-blur-sm rounded-lg p-2 sm:p-2.5 mb-2 sm:mb-3">
+                  <div className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3">
+                    <div className="flex justify-between items-center gap-1">
+                      <span className="text-green-300 font-semibold text-xs sm:text-sm">{poll.yesButtonText}: {yesPercentage}%</span>
+                      <span className="text-white/80 text-xs">({poll.yesVotes})</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-red-300 font-semibold text-sm sm:text-base">{poll.noButtonText}: {noPercentage}%</span>
-                      <span className="text-white/80 text-xs sm:text-sm">({poll.noVotes} votes)</span>
+                    <div className="flex justify-between items-center gap-1">
+                      <span className="text-red-300 font-semibold text-xs sm:text-sm">{poll.noButtonText}: {noPercentage}%</span>
+                      <span className="text-white/80 text-xs">({poll.noVotes})</span>
                     </div>
                   </div>
-                  <div className="w-full bg-white/20 backdrop-blur-sm rounded-full h-3 overflow-hidden shadow-inner">
+                  <div className="w-full bg-white/20 backdrop-blur-sm rounded-full h-2 sm:h-2.5 overflow-hidden shadow-inner">
                     <div
-                      className="bg-green-500 h-3 rounded-full transition-all duration-500 shadow-sm"
+                      className="bg-green-500 h-2 sm:h-2.5 rounded-full transition-all duration-500 shadow-sm"
                       style={{ width: `${yesPercentage}%` }}
                     ></div>
                   </div>
@@ -317,15 +313,15 @@ export default function TrendingHeroCard({ poll: initialPoll, totalVotes: initia
               )}
 
               {totalVotes === 0 && !voted && (
-                <div className="border-t border-white/30 pt-4 text-center bg-white/10 backdrop-blur-sm rounded-lg p-3 mb-4">
-                  <p className="text-white/90 text-base font-medium">No votes yet. Be the first to vote!</p>
+                <div className="border-t border-white/30 pt-2 sm:pt-3 text-center bg-white/10 backdrop-blur-sm rounded-lg p-2 mb-2 sm:mb-3">
+                  <p className="text-white/90 text-xs sm:text-sm font-medium">No votes yet. Be the first!</p>
                 </div>
               )}
 
               {voted && !showCaptcha && (
-                <div className="bg-green-500/90 backdrop-blur-md border-2 border-green-300 text-white px-4 py-3 rounded-xl text-center mb-4 font-semibold text-base sm:text-lg shadow-lg">
-                  <span className="inline-flex items-center gap-2">
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <div className="bg-green-500/90 backdrop-blur-md border-2 border-green-300 text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg text-center mb-2 sm:mb-3 font-semibold text-xs sm:text-sm shadow-lg">
+                  <span className="inline-flex items-center gap-1.5">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                     You have voted!
@@ -333,20 +329,20 @@ export default function TrendingHeroCard({ poll: initialPoll, totalVotes: initia
                 </div>
               )}
 
-              {/* Vote Buttons */}
+              {/* Vote Buttons - Always visible at bottom */}
               {!voted && !success && !showCaptcha && (
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <button
                     onClick={() => handleVoteClick('yes')}
                     disabled={loading}
-                    className="flex-1 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] text-base sm:text-lg"
+                    className="flex-1 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
                   >
                     {poll.yesButtonText}
                   </button>
                   <button
                     onClick={() => handleVoteClick('no')}
                     disabled={loading}
-                    className="flex-1 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold py-3 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] text-base sm:text-lg"
+                    className="flex-1 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white font-bold py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg sm:rounded-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl active:shadow-lg transform hover:scale-[1.02] active:scale-[0.98] text-sm sm:text-base"
                   >
                     {poll.noButtonText}
                   </button>

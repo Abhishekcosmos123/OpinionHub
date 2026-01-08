@@ -306,7 +306,7 @@ function HomeContent() {
               ref={trendingScrollRef}
               onMouseEnter={() => setIsHovered(true)}
               onMouseLeave={() => setIsHovered(false)}
-              className="flex gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-6 snap-x snap-mandatory px-4 sm:px-6"
+              className="flex gap-4 sm:gap-6 overflow-x-auto scrollbar-hide scroll-smooth pb-4 sm:pb-6 snap-x snap-mandatory px-4 sm:px-6"
               style={{
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
@@ -328,7 +328,7 @@ function HomeContent() {
                 return (
                   <div
                     key={`trending-${poll._id}`}
-                    className="flex-shrink-0 snap-start w-full min-w-[85vw] sm:min-w-[80vw] md:min-w-[75vw] lg:min-w-[65vw] xl:min-w-[55vw]"
+                    className="flex-shrink-0 snap-start w-full min-w-[92vw] sm:min-w-[88vw] md:min-w-[75vw] lg:min-w-[65vw] xl:min-w-[55vw]"
                     style={{
                       animationDelay: `${index * 100}ms`,
                     }}

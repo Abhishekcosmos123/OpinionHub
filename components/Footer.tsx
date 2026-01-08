@@ -1,8 +1,17 @@
 'use client';
 
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function Footer() {
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith('/admin');
+
+  // Hide footer in admin panel
+  if (isAdmin) {
+    return null;
+  }
+
   return (
     <footer className="bg-gradient-to-br from-gray-900 via-indigo-900 to-purple-900 text-white mt-16">
       <div className="container mx-auto px-4 sm:px-6 py-12">
